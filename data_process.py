@@ -1,6 +1,7 @@
 import jsonlines
 import re, random, os, fire
 import codecs, csv
+import time
 
 q_list = ['27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '122', '123', '124', '125', '126', '127', '128', '129', '132', '133', '134', '135', '136', '137', '138', '158', '159', '160', '161', '162', '169', '170', '196', '197', '198', '224', '225', '226', '227', '228', '229', '230', '231', '232', '233']
 
@@ -23,11 +24,7 @@ def getResponse(prompt, engine, role=None, history=None):
         try:
             times += 1  
             response = client.chat.completions.create(
-                # model='gpt-3.5-turbo',
-                # model='gpt-4-turbo-preview',
                 model=engine,
-                # model='gpt-4-1106-preview',
-                # model='gpt-4',
                 messages=msg,
                 temperature=0.7
                 )
@@ -60,9 +57,8 @@ def generateCountryAns(country, country_codes):
     avg_item = {'B_COUNTRY': 'Avg', 'B_COUNTRY_ALPHA': ''}
     avg_first_item = {'B_COUNTRY': 'Avg_First', 'B_COUNTRY_ALPHA': ''}
     avg_last_item = {'B_COUNTRY': 'Avg_Last', 'B_COUNTRY_ALPHA': ''}
-    with codecs.open('/home/v-chengli2/CultureAug/data/WVS_Cross-National_Wave_7_csv_v5_0.csv', encoding='utf-8-sig') as f:
+    with codecs.open('data/WVS_Cross-National_Wave_7_csv_v5_0.csv', encoding='utf-8-sig') as f:
         for row in csv.DictReader(f, skipinitialspace=True):
-            # if row['B_COUNTRY'] == country_code:
             if row['B_COUNTRY'] in country_codes:
                 num += 1
                 if num <= 1000:
@@ -128,15 +124,12 @@ def generateAnswerData(culture):
                 'Turkish': 'data/Turkish/Turkey.csv'}
     ans_path = ans_dict[culture]
     with codecs.open(ans_path, encoding='utf-8-sig') as f:
-    # with codecs.open(f'data/{country}/{country}.csv', encoding='utf-8-sig') as f:
         for row in csv.DictReader(f, skipinitialspace=True):
             if row['B_COUNTRY'] == 'Avg':
-            # if row['B_COUNTRY'] == 'Avg_First':
                 ans_item = {'B_COUNTRY': row['B_COUNTRY'], 'B_COUNTRY_ALPHA': row['B_COUNTRY_ALPHA']}
                 for q in q_list:
                     k = 'Q' + q
                     ans_item[k] = int(float(row[k]))
-                # print('Ans: ', ans_item)
     f.close()
     
     option_dict = dict()
@@ -167,8 +160,6 @@ def generateAnswerData(culture):
     for k in ans_item.keys():
         if k in option_dict.keys():
             ans = abs(int(ans_item[k]))
-            # print('K: ', k)
-            # print(ans)
             options = option_dict[k]
             print('options: ', options)
             print('ans: ', ans)
@@ -185,31 +176,7 @@ def generateAnswerData(culture):
                 ans_text = str(ans)
             new_ans_dict[k] = ans_text
 
-    # print(new_ans_dict)
     return new_ans_dict
-
-def QAformat():
-    with jsonlines.open("data/new/WVQ_Arabian_QA.jsonl", mode='a') as writer:
-        with open("data/new/WVQ_Arabian_3.jsonl", "r+", encoding="utf8") as f:
-            for item in jsonlines.Reader(f):
-                new_opinion = item['new_opinion']
-                input = 'Please rewrite into QA format. It should be format like \nQ:... \nA:...: ' + new_opinion
-                response = ''
-                while 'Q:' not in response or 'A:' not in response:
-                    response, his = getResponse(input, 'gpt-4')
-                print('Input: ', new_opinion)
-                print('Res: ', response)
-                QAs = response.split('\n')
-                index = QAs[0].find(':')
-                question = QAs[0][index+1:].strip()
-                index = QAs[1].find(':')
-                answer = QAs[1][index+1:].strip()
-                print(new_opinion)
-                print('Q: ', question)
-                print('A: ', answer)
-                item['Q'] = question
-                item['A'] = answer
-                writer.write(item)
 
 def getPrompt(item, type):
     content = item['q_content']
@@ -233,7 +200,7 @@ def getPrompt(item, type):
 
 def postProcess(culture):
     from config import culture_dict
-    file_name = f'data/{culture}/origin/new/WVQ_v1__gpt-3.5-turbo-0613_1000'
+    file_name = f''
     no_list = ["does not provide", "doesn't provide", "does not express", "doesn't express", "does not contain", "doesn't contain", "seem to contain", "seem to express", "does not convey", "doesn't convey"]
     state_list = ["statement", "stance", "viewpoint", "perspective", "idea", "belief", "assertion", "proposition"]
     with jsonlines.open(f"{file_name}_post.jsonl", mode='a') as writer:
@@ -299,125 +266,30 @@ def postProcess(culture):
 
                 writer.write(item)
 
-def generateFintuneData(country):
-    ans_item = dict()
-    with codecs.open(f'data/Arabic/Jordan.csv', encoding='utf-8-sig') as f:
-    # with codecs.open(f'data/{country}/{country}.csv', encoding='utf-8-sig') as f:
-        for row in csv.DictReader(f, skipinitialspace=True):
-            if row['B_COUNTRY'] == 'Avg':
-            # if row['B_COUNTRY'] == 'Avg_First':
-                ans_item = {'B_COUNTRY': row['B_COUNTRY'], 'B_COUNTRY_ALPHA': row['B_COUNTRY_ALPHA']}
-                for q in q_list:
-                    k = 'Q' + q
-                    ans_item[k] = int(float(row[k]))
-                print('Ans: ', ans_item)
-    f.close()
-
-    dir_path = f"data/Arabic/new"
-    if os.path.exists(dir_path) == False:
-        os.makedirs(dir_path)
-
-    # with jsonlines.open(f"{dir_path}/WVQ_{country}_question.jsonl", "a") as writer:
-    with jsonlines.open(f"{dir_path}/WVQ_Arabic_2.jsonl", "a") as writer:
-    # with jsonlines.open(f"{dir_path}/WVQ_{country}_multidemos_topic_3000.jsonl", "a") as writer:
-        with open("data/WVQ.jsonl", "r+", encoding="utf8") as f:
-            t = 0
-            for item in jsonlines.Reader(f):
-                prompt = getPrompt(item, t)
-                print(item['q_id'], ' ', item['q_content'])
-                print(prompt)
-                # prompt = translate(prompt)
-                # print(prompt)
-                ans = ans_item['Q'+item['q_id']]
-                if ans < 0:
-                    ans = 0 - ans
-                new_item = {"messages": [{"role": "system", "content": f"You are an {country} chatbot that know {country} very well."}, 
-                                        {"role": "user", "content": prompt}, 
-                                        {"role": "assistant", "content": str(ans)}]}
-                writer.write(new_item)
-                t += 1
-        # with open("data/test_500_question.jsonl", "r+", encoding="utf8") as f:
-        with open("data/new/WVQ_Arabian_QA.jsonl", "r+", encoding="utf8") as f:
-        # with open("data/test_500_multidemos_topic_3000.jsonl", "r+", encoding="utf8") as f:
-            t = 0
-            for item in jsonlines.Reader(f):
-                q = item['Q']
-                a = item['A']
-                if 'the Arabian' in q:
-                    q = q.replace('the Arabian', 'you')
-                if 'The Arabian' in q:
-                    q = q.replace('The Arabian', 'You')
-                if 'the Arabian' in a:
-                    a = a.replace('the Arabian', 'I')
-                if 'The Arabian' in a:
-                    a = a.replace('The Arabian', 'I')
-                
-                new_item = {"messages": [{"role": "system", "content": f"You are an {country} chatbot that know {country} very well."}, 
-                                        {"role": "user", "content": q}, 
-                                        {"role": "assistant", "content": a}]}
-                writer.write(new_item)
-                t += 1
-    print('ok!')
-
 def finetune():
     import time
     from openai import OpenAI
     client = OpenAI(api_key="xxx")
 
-    
-    # client.files.create(
-    #     file=open(f"data/Arabic/origin/Finetune/WVQ_v1__gpt-3.5-turbo-0613_500_post.jsonl", "rb"),
-    #     purpose="fine-tune"
-    # )
-
-    # client.files.create(
-    #     file=open(f"data/Arabic/origin/Finetune/WVQ_v1__gpt-3.5-turbo-0613_750_post.jsonl", "rb"),
-    #     purpose="fine-tune"
-    # )
-
-    # client.files.create(
-    #     file=open(f"data/Arabic/origin/Finetune/WVQ_v1__gpt-3.5-turbo-0613_1000_post.jsonl", "rb"),
-    #     purpose="fine-tune"
-    # )
+    client.files.create(
+        file=open(f"data/Arabic/origin/Finetune/WVQ_v1__gpt-3.5-turbo-0613_500_post.jsonl", "rb"),
+        purpose="fine-tune"
+    )
 
     client.fine_tuning.jobs.create(
-        training_file="file-7qisSgOgsz6BAl8VIdeh6GLK", 
-        # model="gpt-3.5-turbo"
+        training_file="xxx", 
         model="gpt-3.5-turbo-0613", 
         hyperparameters={
             "n_epochs": 3
         }
     )
-
-    client.fine_tuning.jobs.create(
-        training_file="file-A2s8n2beGhQzyqYXPlwukar4", 
-        # model="gpt-3.5-turbo"
-        model="gpt-3.5-turbo-0613", 
-        hyperparameters={
-            "n_epochs": 3
-        }
-    )
-
-    client.fine_tuning.jobs.create(
-        training_file="file-Hs4s4Qhf3r2iyzSisfMvZJvr", 
-        # model="gpt-3.5-turbo"
-        model="gpt-3.5-turbo-0613", 
-        hyperparameters={
-            "n_epochs": 3
-        }
-    )
-
 
 def answerAug(country, type, ans_file=''):
     ans_item = dict()
     if type == 'wvq':
-        # Mark 
-        # ans_file = "data/Chinese/China.csv"
         with codecs.open(ans_file, encoding='utf-8-sig') as f:
-        # with codecs.open(f'data/{country}/{country}.csv', encoding='utf-8-sig') as f:
             for row in csv.DictReader(f, skipinitialspace=True):
                 if row['B_COUNTRY'] == 'Avg':
-                # if row['B_COUNTRY'] == 'Avg_First':
                     ans_item = {'B_COUNTRY': row['B_COUNTRY'], 'B_COUNTRY_ALPHA': row['B_COUNTRY_ALPHA']}
                     for q in q_list:
                         k = 'Q' + q
@@ -430,9 +302,6 @@ def answerAug(country, type, ans_file=''):
         os.makedirs(dir_path)
     
     reason_dict = dict()
-    # WVQ_cross_500_post.jsonl
-    # WVQ_cross_500_sgender_post.jsonl
-    # WVQ_v1__gpt-3.5-turbo-0613_500_post.jsonl
     with open(f"data/{country}/{type}/new/WVQ_cross_1000_post.jsonl", "r+", encoding="utf8") as f:
         for item in jsonlines.Reader(f):
             if type == 'wvq':
@@ -446,10 +315,10 @@ def answerAug(country, type, ans_file=''):
                 reason_dict[id] = [reason]
 
     if type == 'specific':
-        data_file = f"data/{country}/specific/new_test.jsonl"
+        data_file = f"xxx"
     else:
         data_file = "data/WVQ.jsonl"
-    with jsonlines.open(f"{dir_path}/WVQ_cross_1000_post.jsonl", "a") as writer:
+    with jsonlines.open(f"{dir_path}/xxx", "a") as writer:
     # with jsonlines.open(f"{dir_path}/WVQ_{country}_multidemos_topic_3000.jsonl", "a") as writer:
         for t in range(20):
             with open(data_file, "r+", encoding="utf8") as f:
@@ -484,84 +353,6 @@ def answerAug(country, type, ans_file=''):
 
                     writer.write(new_item)
 
-def deduplicate():
-    # import json
-    ori_name = 'data/Arabic/new/WVQ_Arabian_new'
-    item_list = []
-    with open(f"{ori_name}.jsonl", "r+", encoding="utf8") as f:
-        for item in jsonlines.Reader(f):
-            item_str = str(item)
-            item_list.append(item_str)
-    post_list = list(set(item_list))
-    with jsonlines.open(f"{ori_name}_de.jsonl", "a") as writer:
-        for p_item in post_list:
-            print(p_item)
-            print(type(p_item))
-            item_dict = eval(p_item)
-            writer.write(item_dict)
-    
-    print('ok!')
-
-def selectData():
-
-    def getPrompt(content, attitude, new_contents):
-        if '?' in content:
-            question = content
-        else:
-            question = f'Do you agree with {content}?'
-        new_prompt = ''
-        for i in range(len(new_contents)):
-            cur = f'{i+1}. {new_contents[i]}'
-            if i > 0:
-                new_prompt += '\n'
-            new_prompt += cur
-
-        qa_prompt = f'Question: {question}\nAnswer: {attitude}'
-        prompt = f'{qa_prompt}\nThere is a QA pair. Please select 20 optimal reasons from the candidates and number them. The selected reasons must support the answer and be convinced, coherent with the answer.\nThe alternative reasons are: \n{new_prompt}'
-        # prompt = f'{qa_prompt}\nThere is a QA pair. Please select 10 optimal reasons from the candidates and number them. \nRequirements: 1. The selected reasons must support the answer and be convinced, coherent with the answer. 2. The meanings expressed by each other are different.\nThe alternative reasons are: \n{new_prompt}'
-
-        return prompt
-
-    data_dict = dict()
-    with open("data/Arabic/new/select_test_2.jsonl", "r+", encoding="utf8") as f:
-        for item in jsonlines.Reader(f):
-            q_id = item['q_id']
-            if q_id not in data_dict.keys():
-                data_dict[q_id] = [item]
-            else:
-                data_dict[q_id].append(item)
-    
-    with jsonlines.open('data/Arabic/new/select_test_2_select_1000.jsonl',mode='a') as writer:
-        for q_id in data_dict.keys():
-            q_list = data_dict[q_id]
-            content = q_list[0]['origin_content']
-            attitude = q_list[0]['attitude']
-            new_contents = []
-            for item in q_list:
-                new_contents.append(item['new_opinion'])
-            
-            prompt = getPrompt(content, attitude, new_contents)
-            response, his = getResponse(prompt, 'gpt-4')
-            print('Content: ', content, ' atti: ', attitude)
-            # print(response)
-
-            reasons = response.split('\n')
-            new_reasons = []
-            for r in reasons:
-                r = r.strip()
-                if '.' in r:
-                    index = r.find('.')
-                    if index != len(r) - 1:
-                        r = r[index+1:]
-                r = r.strip()
-                new_reasons.append(r)
-                new_item = {'q_id': q_id, 'origin_content': content, 'attitude': attitude, 'new_opinion': r}
-                writer.write(new_item)
-                print(new_item)
-            # print(new_reasons)
-
-    print('ok')
-
 def generateData4Llama(culture):
     from datasets import load_dataset
     def formatting_func(example):
@@ -569,7 +360,7 @@ def generateData4Llama(culture):
         text = f"### System: You are an {culture} chatbot that know {culture} very well. Question: {example['messages'][1]['content']}\n ### Answer: {example['messages'][2]['content']}"
         return text
     
-    path_name = 'data/Arabic/specific/Finetune/WVQ_v1_ori_m'
+    path_name = 'xxx'
     dataset = load_dataset('json', data_files=f'{path_name}.jsonl', split='train')
 
     with jsonlines.open(f'{path_name}_llama.jsonl',mode='a') as writer:
@@ -579,7 +370,6 @@ def generateData4Llama(culture):
             writer.write(new_item)
     print('ok!')
 
-# deduplicate()
 
 
 # generateData4Llama('Chinese')
