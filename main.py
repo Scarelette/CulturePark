@@ -17,7 +17,7 @@ def getResponse(prompt, engine, role=None, history=None):
         msg.append({"role": "system", "content": f"Please act as {role}. Please answer directly."})
     msg.append({"role": "user", "content": prompt})
 
-    client = OpenAI(api_key="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")
+    client = OpenAI(api_key="xxx")
 
     output = None
     times = 0
@@ -73,7 +73,7 @@ def rewriteData(seed_data, new_data):
 
 def get_embedding(text):
     from openai import OpenAI
-    client = OpenAI(api_key="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")
+    client = OpenAI(api_key="xxx")
 
     def normalize_l2(x):
         x = np.array(x)
