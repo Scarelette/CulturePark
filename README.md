@@ -13,6 +13,7 @@ pip install -q -U google-generativeai
 ## Data Augmentation
 
 Download WVS file from https://www.worldvaluessurvey.org/WVSContents.jsp
+Download PEW file from https://huggingface.co/datasets/Anthropic/llm_global_opinions
 
 ### In-cultural Communication
 
