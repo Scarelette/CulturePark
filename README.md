@@ -1,4 +1,4 @@
-# CulturePark: Boosting Cross-cultural Understanding of Large Language Models
+# CulturePark: Boosting Cross-cultural Understanding of Large Language Models (NeurIPS 2024)
 
 <center class ='img'>
 <img src="fig-overview-arxiv.jpg" width = "100%">
@@ -7,6 +7,8 @@
 ## Introduction
 
 Cultural bias pervades many large language models (LLMs), largely due to data deficiency. Traditionally, cultural benchmarks are constructed by aggregating existing datasets, often sourced from platforms such as Wikipedia or social media. However, these approaches are heavily dependent on real-world data and human annotation, making them costly and difficult to scale. In response, this paper introduces \method, an LLM-powered multi-agent collaboration framework following cognitive theories. \method simulates cross-cultural human communication, serving as a robust method for data augmentation. It generates high-quality cross-cultural dialogues encapsulating human beliefs, norms, and customs. Utilizing \method, we generated 41,000 cultural samples and subsequently fine-tuned eight culture-specific LLMs. We evaluated these models across three downstream tasks: content moderation, cultural alignment, and cultural education. Our results show that for content moderation, our GPT-3.5-based models either matched or outperformed GPT-4 in eight cultural contexts. In cultural alignment, our models surpassed GPT-4 using Hofstede’s VSM 13~\citep{vsm13} framework. Furthermore, for cultural education, our approach demonstrated superior outcomes in both learning efficacy and user experience compared to GPT-4. \method proves essential for addressing cultural bias and advancing the democratization of AI, highlighting the critical role of culturally inclusive data in model training.
+
+Paper link: https://arxiv.org/pdf/2405.15145
 
 ## Table of Contents
 
@@ -80,3 +82,14 @@ python llama_finetune.py --base_model "path_of_llama_70b" --new_model "path_of_n
 ### 4. Experiment in our paper
 
 You can reproduce the experiments in our paper according to code in https://github.com/Scarelette/CultureLLM/.
+
+## Cite
+
+```bash
+@article{li2024culturepark,
+  title={CulturePark: Boosting Cross-cultural Understanding in Large Language Models},
+  author={Li, Cheng and Teney, Damien and Yang, Linyi and Wen, Qingsong and Xie, Xing and Wang, Jindong},
+  journal={arXiv preprint arXiv:2405.15145},
+  year={2024}
+}
+```
