@@ -89,7 +89,7 @@ You can reproduce the experiments in our paper according to code in https://gith
 @article{li2024culturepark,
   title={CulturePark: Boosting Cross-cultural Understanding in Large Language Models},
   author={Li, Cheng and Teney, Damien and Yang, Linyi and Wen, Qingsong and Xie, Xing and Wang, Jindong},
-  journal={arXiv preprint arXiv:2405.15145},
+  journal={Advances in Neural Information Processing Systems},
   year={2024}
 }
 ```
