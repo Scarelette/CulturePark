@@ -86,10 +86,19 @@ You can reproduce the experiments in our paper according to code in https://gith
 ## Cite
 
 ```bash
-@article{li2024culturepark,
+@inproceedings{li2024culturepark,
   title={CulturePark: Boosting Cross-cultural Understanding in Large Language Models},
   author={Li, Cheng and Teney, Damien and Yang, Linyi and Wen, Qingsong and Xie, Xing and Wang, Jindong},
-  journal={Advances in Neural Information Processing Systems},
+  booktitle={Thirty-Eighth Annual Conference on Neural Information Processing Systems (NeurIPS)},
+  year={2024}
+}
+```
+
+```bash
+@inproceedings{li2024culturellm,
+  title={Culturellm: Incorporating cultural differences into large language models},
+  author={Li, Cheng and Chen, Mengzhou and Wang, Jindong and Sitaram, Sunayana and Xie, Xing},
+  booktitle={Thirty-Eighth Annual Conference on Neural Information Processing Systems (NeurIPS)},
   year={2024}
 }
 ```
